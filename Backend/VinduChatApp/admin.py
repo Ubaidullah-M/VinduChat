@@ -27,12 +27,7 @@ class CustomUserAdmin(UserAdmin):
     ordering = ('email',)
 
 
-
-
 admin.site.register(get_user_model(), CustomUserAdmin)
 admin.site.register(Profile)
 admin.site.register(Chat)
 admin.site.register(Message)
-admin.site.register(GroupChat)
-admin.site.register(GroupChatMember)
-admin.site.register(ChatFeatureSettings)

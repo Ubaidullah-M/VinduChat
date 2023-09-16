@@ -44,8 +44,6 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=100, default=None, null=True, blank=True)
-    last_name = models.CharField(max_length=100, default=None, null=True, blank=True)
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     
     USERNAME_FIELD = 'email'
@@ -79,10 +77,11 @@ class Chat(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     msg_receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='msg_receiver')
     msg_sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='msg_sender')
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True)
     
     def __str__(self):
-        return self.user.name if self.user.name else f"Chat {self.id}"
+        sender_email = self.msg_sender.email if self.msg_sender.email else str(self.msg_sender)
+        receiver_email = self.msg_receiver.email if self.msg_receiver.email else str(self.msg_receiver)      
+        return f"Chat between {sender_email} and {receiver_email} "
 
 
 class Message(models.Model):

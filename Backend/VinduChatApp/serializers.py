@@ -11,8 +11,8 @@ User = get_user_model()
 class SignUpSerializer(serializers.ModelSerializer):
     class Meta():
         model = User
-        fields = ["id", "first_name", "last_name",  "email", "password"]
-        read_only_fields = ('uuid', 'date_joined')
+        fields = ["id", "email", "password"]
+        
 
     def validate(self, attrs):
         email_exists = User.objects.filter(email=attrs["email"]).exists()
@@ -63,8 +63,8 @@ class ChatSerializer(serializers.ModelSerializer):
     def get_other_user(self, obj):
         try:
             if obj.msg_receiver == self.context['request'].user:
-                return UserSerializer(obj.msg_sender).data
-            return UserSerializer(obj.msg_receiver).data
+                return SignUpSerializer(obj.msg_sender).data
+            return SignUpSerializer(obj.msg_receiver).data
         except KeyError:
             logger.exception('Request not passed to context')
             raise APIException()
@@ -82,11 +82,11 @@ class ChatSerializer(serializers.ModelSerializer):
             raise APIException('Could not validate chat recipient', 500)
 
     def create(self, validated_data):
-        msg_receiver = self.context['request'].user
-        msg_sender = validated_data['recipient']
+        msg_sender = self.context.get('request').user
+        msg_receiver = validated_data['recipient']
         return Chat.objects.create(msg_receiver=msg_receiver, msg_sender=msg_sender)
 
     class Meta:
         model = Chat
         fields = ('id', 'timestamp', 'app_user', 'recipient')
-        read_only_fields = ('id', 'timestamp', 'app_user')
+        read_only_fields = ('timestamp', 'app_user')

@@ -15,11 +15,12 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.request import Request
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import AnonymousUser
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import APIException, PermissionDenied
 from rest_framework.authentication import SessionAuthentication
+from accounts.tokens import  get_tokens_for_user
 
 
 logger = logging.getLogger(__name__)
@@ -42,10 +43,11 @@ class SignUpView(generics.GenericAPIView):
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             user = serializer.save()
-            user.save()
+            tokens = get_tokens_for_user(user)
             response_data = {
                 "message": "User Created Successfully",
                 "data": serializer.data,
+                "tokens": tokens
             }
             return Response(data=response_data, status=status.HTTP_201_CREATED)
 
@@ -57,6 +59,7 @@ class LogInView(APIView):
     A View to handle user login and retrieve JWT tokens.
 
     Supported HTTP methods: POST, GET.
+
     """
 
     permission_classes = []
@@ -80,15 +83,17 @@ class LogInView(APIView):
     def post(self, request):
         """
         Login a user with the provided email and password, and return JWT tokens.
+
         """
         email = request.data.get("email")
         password = request.data.get("password")
 
         user = authenticate(email=email, password=password)
-        login(request, user)
         if user is not None:
+            tokens = get_tokens_for_user(user)
             response_data = {
                 "message": "Login Successful",
+                "tokens": tokens
             }
             return Response(data=response_data, status=status.HTTP_200_OK)
         else:
@@ -287,8 +292,9 @@ class MessageViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_permissions(self):
-        if self.request.method == "DELETE":
+        if self.request.method in ["PUT", "DELETE"]:
             return [IsAuthenticated()]
+        return []
 
     def get_serializer_class(self):
         return MessageSerializer
@@ -307,7 +313,7 @@ class ChatViewSet(ModelViewSet):
     filterset_class = ChatFilter
     search_fields = ['name']
 
-    http_method_names = ["get", "patch", "post", "delete", "options", "head"]
+    http_method_names = ["get", "put", "post", "delete", "options", "head"]
 
     @swagger_auto_schema(
         operation_summary="List chats",
@@ -333,7 +339,7 @@ class ChatViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @swagger_auto_schema(
-        operation_summary="Partial Update of a Chat",
+        operation_summary="Update of a Chat",
         operation_description="Update specific fields of a chat.",
         request_body=ChatSerializer,
         responses={200: ChatSerializer()}
@@ -366,7 +372,7 @@ class ChatViewSet(ModelViewSet):
         responses={201: ChatSerializer(), 400: "Bad Request"}
     )
     def create(self, request, *args, **kwargs): 
-        serializer = ChatSerializer(data=request.data, context={"user_id": request.user.id})
+        serializer = ChatSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         chat = serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -374,7 +380,9 @@ class ChatViewSet(ModelViewSet):
     def get_permissions(self):
         if self.request.method in ["PUT", "DELETE"]:
             return [IsAuthenticated()]
+        return []
 
     def get_queryset(self):
+        user = self.request.user  
         return Chat.objects.filter(Q(msg_receiver=user) | Q(msg_sender=user))
     

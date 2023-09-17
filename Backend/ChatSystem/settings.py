@@ -153,9 +153,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'errors',
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
@@ -168,6 +168,13 @@ AUTHENTICATION_BACKENDS = [
 
 AUTH_USER_MODEL = 'VinduChatApp.User'
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
+    'SIGNING_KEY': SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'Bearer': {
@@ -178,8 +185,6 @@ SWAGGER_SETTINGS = {
     }
 }
 
-SESSION_COOKIE_NAME = 'vinduchatappsession'
-SESSION_COOKIE_AGE = 3600 
 
 # Allow all domains to access your API (you can adjust this to your needs)
 CORS_ALLOW_ALL_ORIGINS = True

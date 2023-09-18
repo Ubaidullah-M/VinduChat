@@ -42,6 +42,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     received = serializers.SerializerMethodField('is_receiver')
+    sender = serializers.UUIDField(source='sender_id', read_only=True)
 
     def is_receiver(self, obj):
         try:
@@ -53,7 +54,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ('id', 'timestamp', 'content', 'received')
+        fields = ('id', 'timestamp', 'message', 'received', 'sender')
 
 
 class ChatSerializer(serializers.ModelSerializer):
@@ -89,4 +90,4 @@ class ChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chat
         fields = ('id', 'timestamp', 'app_user', 'recipient')
-        read_only_fields = ('timestamp', 'app_user')
+    

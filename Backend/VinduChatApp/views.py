@@ -249,7 +249,7 @@ class MessageViewSet(ModelViewSet):
     )
     def retrieve(self, request, *args, **kwargs):
         message = get_object_or_404(Message, pk=kwargs['pk'])
-        serializer = MessageSerializer(message)
+        serializer = MessageSerializer(message, context={'request': request})
         return Response(serializer.data)
 
     @swagger_auto_schema(
@@ -260,7 +260,7 @@ class MessageViewSet(ModelViewSet):
     )
     def update(self, request, *args, **kwargs):
         message = get_object_or_404(Message, pk=kwargs['pk'])
-        serializer = MessageSerializer(message, data=request.data, partial=True)
+        serializer = MessageSerializer(message, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -288,11 +288,8 @@ class MessageViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = MessageSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        
-        # Use chat_id from URL parameters
         chat_id = self.kwargs['chat_pk']
         message = serializer.save(chat_id=chat_id)
-        
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_permissions(self):

@@ -81,7 +81,7 @@ class Chat(models.Model):
     def __str__(self):
         sender_email = self.msg_sender.email if self.msg_sender.email else str(self.msg_sender)
         receiver_email = self.msg_receiver.email if self.msg_receiver.email else str(self.msg_receiver)      
-        return f"{sender_email} started a chat with {receiver_email} "
+        return f"Chat between {sender_email} and {receiver_email} "
 
 
 class Message(models.Model):
@@ -91,6 +91,14 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     message = models.TextField()
     seen = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.sender:
+            if self.chat.msg_sender == self.sender:
+                self.sender = self.chat.msg_sender
+            elif self.chat.msg_receiver == self.sender:
+                self.sender = self.chat.msg_receiver
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.sender} - {self.chat.id}'

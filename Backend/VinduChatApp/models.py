@@ -81,15 +81,16 @@ class Chat(models.Model):
     def __str__(self):
         sender_email = self.msg_sender.email if self.msg_sender.email else str(self.msg_sender)
         receiver_email = self.msg_receiver.email if self.msg_receiver.email else str(self.msg_receiver)      
-        return f"Chat between {sender_email} and {receiver_email} "
+        return f"{sender_email} started a chat with {receiver_email} "
 
 
 class Message(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE,  related_name='sender_atm', null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    content = models.TextField()
+    message = models.TextField()
     seen = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.chat.msg_sender} - {self.chat}'
+        return f'{self.sender} - {self.chat.id}'

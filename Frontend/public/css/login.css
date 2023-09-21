@@ -34,6 +34,10 @@ body {
 
 /* ===========Light mode CSS============== */
 
+#switch {
+    transform: scale(.6);
+}
+
 .switch-mode-light {
     width: 50px;
     border: 1px solid var(--blue);
@@ -86,7 +90,7 @@ form input {
     justify-content: space-between;
 }
 
-.reg p {
+p {
     font-size: 14px;
 }
 
@@ -144,14 +148,15 @@ form input {
 .dark input {
     background: var(--black-dark-mode);
     outline-color: var(--yellow-btn);
+    color: var(--white);
 }
 
-.reg .txt-dark {
+.reg .txt-dark, .forget-dark {
     font-size: 14px;
     color: var(--white);
 }
 
-.reg .txt-dark a {
+.reg .txt-dark a, .forget-dark a {
     color: var(--yellow-btn);
 }
 

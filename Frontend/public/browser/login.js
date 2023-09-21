@@ -3,6 +3,7 @@ let logo = document.querySelector('#image')
 let form = document.querySelector('#form')
 let formTxt = document.querySelector('#reg-txt')
 let btn = document.querySelector('#btn')
+let forget = document.querySelector('#forget')
 
 
 switchMode.addEventListener("click", function() {
@@ -16,6 +17,8 @@ switchMode.addEventListener("click", function() {
         formTxt.classList.add('txt-dark')
         btn.classList.remove('btn-ligth')
         btn.classList.add('btn-dark')
+        forget.classList.remove('forget-light')
+        forget.classList.add('forget-dark')
     } else {
         this.className = 'switch-mode-light'
         document.body.classList.remove('bg')
@@ -26,5 +29,7 @@ switchMode.addEventListener("click", function() {
         formTxt.classList.add('txt-light')
         btn.classList.remove('btn-dark')
         btn.classList.add('btn-light')
+        forget.classList.remove('forget-dark')
+        forget.classList.add('forget-light')
     }
 })

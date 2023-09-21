@@ -87,9 +87,18 @@ class Chat(models.Model):
 class Message(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE,  related_name='sender_atm', null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    content = models.TextField()
+    message = models.TextField()
     seen = models.BooleanField(default=False)
 
+    def save(self, *args, **kwargs):
+        if not self.sender:
+            if self.chat.msg_sender == self.sender:
+                self.sender = self.chat.msg_sender
+            elif self.chat.msg_receiver == self.sender:
+                self.sender = self.chat.msg_receiver
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f'{self.chat.msg_sender} - {self.chat}'
+        return f'{self.sender} - {self.chat.id}'

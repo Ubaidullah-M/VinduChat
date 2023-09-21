@@ -161,11 +161,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # Enable session authentication
-]
-
-
 AUTH_USER_MODEL = 'VinduChatApp.User'
 
 SIMPLE_JWT = {
@@ -187,8 +182,8 @@ SWAGGER_SETTINGS = {
 
 
 # Allow all domains to access your API (you can adjust this to your needs)
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_CREDENTIALS = True
 
-# CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
-# CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
+CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']

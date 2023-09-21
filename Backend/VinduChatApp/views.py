@@ -93,6 +93,7 @@ class LogInView(APIView):
             tokens = get_tokens_for_user(user)
             response_data = {
                 "message": "Login Successful",
+                "user_id": user.id,
                 "tokens": tokens
             }
             return Response(data=response_data, status=status.HTTP_200_OK)
@@ -237,7 +238,7 @@ class MessageViewSet(ModelViewSet):
         user = request.user
         if user.is_anonymous:
             raise PermissionDenied("Authentication required to access messages.")
-        queryset = Message.objects.filter(chat__id=chat_id)
+        queryset = Message.objects.filter(chat_id=chat__id)
         serializer = MessageSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -248,7 +249,7 @@ class MessageViewSet(ModelViewSet):
     )
     def retrieve(self, request, *args, **kwargs):
         message = get_object_or_404(Message, pk=kwargs['pk'])
-        serializer = MessageSerializer(message)
+        serializer = MessageSerializer(message, context={'request': request})
         return Response(serializer.data)
 
     @swagger_auto_schema(
@@ -259,7 +260,7 @@ class MessageViewSet(ModelViewSet):
     )
     def update(self, request, *args, **kwargs):
         message = get_object_or_404(Message, pk=kwargs['pk'])
-        serializer = MessageSerializer(message, data=request.data, partial=True)
+        serializer = MessageSerializer(message, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -284,11 +285,11 @@ class MessageViewSet(ModelViewSet):
         request_body=MessageSerializer,
         responses={201: MessageSerializer(), 400: "Bad Request"}
     )
-    def create(self, request, *args, **kwargs): 
-        chat_id = self.kwargs['chat_id']
-        serializer = MessageSerializer(data=request.data, context={"user_id": request.user.id, "chat_id": chat_id})
+    def create(self, request, *args, **kwargs):
+        serializer = MessageSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        message = serializer.save()
+        chat_id = self.kwargs['chat_pk']
+        message = serializer.save(chat_id=chat_id)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_permissions(self):
@@ -296,11 +297,10 @@ class MessageViewSet(ModelViewSet):
             return [IsAuthenticated()]
         return []
 
-    def get_serializer_class(self):
-        return MessageSerializer
-
     def get_serializer_context(self):
-        return {"chat_id": self.kwargs["chat_pk"]}
+        context = super().get_serializer_context()
+        context['request'] = self.request 
+        return context
 
     def get_queryset(self):
         return Message.objects.filter(chat_id=self.kwargs['chat_pk']).order_by('-timestamp')
@@ -309,11 +309,11 @@ class MessageViewSet(ModelViewSet):
 class ChatViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ChatSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ChatFilter
     search_fields = ['name']
 
-    http_method_names = ["get", "put", "post", "delete", "options", "head"]
+    http_method_names = ["get", "post", "delete", "options", "head"]
 
     @swagger_auto_schema(
         operation_summary="List chats",
@@ -324,8 +324,11 @@ class ChatViewSet(ModelViewSet):
         user = request.user
         if user.is_anonymous:
             raise PermissionDenied("Authentication required to access chats.")
-        queryset = Chat.objects.filter(Q(msg_receiver=user) | Q(msg_sender=user))
-        serializer = ChatSerializer(queryset, many=True)
+        if user.is_staff:
+            queryset = Chat.objects.all()
+        else:
+            queryset = Chat.objects.filter(Q(msg_receiver=user) | Q(msg_sender=user))
+        serializer = ChatSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     @swagger_auto_schema(
@@ -335,20 +338,7 @@ class ChatViewSet(ModelViewSet):
     )
     def retrieve(self, request, *args, **kwargs):
         chat = get_object_or_404(Chat, pk=kwargs['pk'])
-        serializer = ChatSerializer(chat)
-        return Response(serializer.data)
-
-    @swagger_auto_schema(
-        operation_summary="Update of a Chat",
-        operation_description="Update specific fields of a chat.",
-        request_body=ChatSerializer,
-        responses={200: ChatSerializer()}
-    )
-    def update(self, request, *args, **kwargs):
-        chat = get_object_or_404(Chat, pk=kwargs['pk'])
-        serializer = ChatSerializer(chat, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer = ChatSerializer(chat, context={'request': request})
         return Response(serializer.data)
 
     @swagger_auto_schema(
@@ -378,7 +368,7 @@ class ChatViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_permissions(self):
-        if self.request.method in ["PUT", "DELETE"]:
+        if self.request.method in ["DELETE"]:
             return [IsAuthenticated()]
         return []
 

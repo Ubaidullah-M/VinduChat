@@ -42,18 +42,24 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     received = serializers.SerializerMethodField('is_receiver')
+    msg_status = serializers.SerializerMethodField('message_status')
+    sender = serializers.EmailField(source='sender.email', read_only=True)
 
     def is_receiver(self, obj):
-        try:
-            user = self.context['request'].user
-            return user != obj.sender
-        except KeyError:
-            logger.exception('Request not passed to context')
-            raise APIException()
+        user = self.context.get('request').user
+        if user is None:
+            raise APIException('Request user not found in context')
+
+        return user != obj.sender
+
+    def message_status(self, obj):
+        if obj.seen:
+            return "read"
+        return "sent"
 
     class Meta:
         model = Message
-        fields = ('id', 'timestamp', 'content', 'received')
+        fields = ('id', 'timestamp', 'message', 'received', 'msg_status', 'sender')
 
 
 class ChatSerializer(serializers.ModelSerializer):
@@ -89,4 +95,5 @@ class ChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chat
         fields = ('id', 'timestamp', 'app_user', 'recipient')
-        read_only_fields = ('timestamp', 'app_user')
+        read_only_fields = ('id', 'timestamp', 'app_user')
+    

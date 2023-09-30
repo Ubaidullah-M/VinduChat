@@ -10,7 +10,7 @@ function ForgetPassWord() {
         </div>
       </div>
       <img src="light-mode.svg" alt="logo" id="image" />
-      <form action="./login.html" className="light" id="form">
+      <form action="/" className="light" id="form">
         <input type="text" placeholder="Enter your registered email" />
         <div className="reg">
           <p className="txt-light" id="reg-txt">

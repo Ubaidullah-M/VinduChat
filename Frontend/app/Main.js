@@ -3,9 +3,10 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // importing my component
-import Login from "./login";
-import Register from "./Register";
-import ForgetPassWord from "./ForgetPassWord";
+import Login from "./Component/login";
+import Register from "./Component/Register";
+import ForgetPassWord from "./Component/ForgetPassWord";
+import Chat from "./Component/Chat";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forget-password" element={<ForgetPassWord />} />
+        <Route path="/login" element={<Chat />} />
       </Routes>
     </BrowserRouter>
   );
@@ -21,8 +23,3 @@ function App() {
 
 const root = ReactDOM.createRoot(document.getElementById("app"));
 root.render(<App />);
-
-// document.addEventListener("DOMContentLoaded", function () {
-//   const rootElement = document.getElementById("app"); // Replace "app" with the ID of your target container
-//   ReactDOM.createRoot(rootElement).render(<ExampleComponent />);
-// });

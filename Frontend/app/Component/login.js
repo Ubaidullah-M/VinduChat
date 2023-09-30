@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-function Register() {
+function Login() {
   return (
     <>
       <div className="switch-mode-light" id="switch">
@@ -10,21 +10,25 @@ function Register() {
         </div>
       </div>
       <img src="light-mode.svg" alt="logo" id="image" />
-      <form action="#" className="light" id="form">
+      <form action="/login" className="light" id="form">
         <input type="text" placeholder="email" />
         <input type="password" placeholder="password" />
-        <input type="password" placeholder="confirm password" />
-        <input type="text" placeholder="phone number" />
+        <p className="forget-light" id="forget">
+          Forgot password?
+          <Link to="/forget-password" className="light">
+            Click here
+          </Link>
+        </p>
         <div className="reg">
           <p className="txt-light" id="reg-txt">
-            Already have an account?{" "}
-            <Link to="/" className="light">
+            Don't have an account?
+            <Link to="/register" className="light">
               Click here
             </Link>{" "}
-            to login
+            to register
           </p>
           <button className="btn-light" id="btn">
-            Regiter
+            Login
           </button>
         </div>
       </form>
@@ -32,4 +36,4 @@ function Register() {
   );
 }
 
-export default Register;
+export default Login;

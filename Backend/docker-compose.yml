@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  app:
+   build: .
+   volumes:
+    - .:/chatapp
+   ports:
+    - "8000:8000"
+   image: application:chatapp
+   container_name: chatapp_container
+   command: python3 manage.py runserver 0.0.0.0:8000
